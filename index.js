@@ -64,19 +64,18 @@ client.on('messageCreate', async message => {
 
     if (cmdStr === 'c!help') {
         const embed = new EmbedBuilder()
-            .setTitle('📚 コマンドヘルプ (「CHUNITHM ベスト枠画像ジェネレーター NEW」DISCORD BOT')
-            .setDescription('`.scoresup` ファイルが添付されたメッセージに**返信（リプライ）**する形でコマンドを実行してください。\n（※過去10件までのリプライを自動で遡ってファイルを探します）')
+            .setTitle('📚 コマンドヘルプ')
+            .setDescription('**🖼️ ベスト枠画像の生成**\n`c!gen [ユーザー名]`\nベスト枠画像を生成します。（例: `c!gen username`）\n※`.scoresup` ファイルを**添付**、またはファイルがあるメッセージに**返信（引用）**して実行すると、そのデータを反映して生成します。')
             .addFields(
-                { name: 'c!view', value: '収録されている楽曲データを番号（インデックス）付きのリストで表示します。' },
-                { name: 'c!detail [番号]', value: '指定した番号の楽曲の詳細データ（内部構造）を確認します。' },
-                { name: 'c!score [番号] [スコア] ...', value: '複数曲のスコアを一括更新します。\n例: `c!score 1 1010000 3 998000`' },
-                { name: 'c!fc [番号] ... / c!aj [番号] ...', value: '指定した曲のFC/AJフラグを切り替えます（ON/OFF反転）。\n※FCとAJは同時に点灯しないよう自動調整されます。' },
-                { name: 'c!update', value: 'サイトから最新の楽曲リスト（更新データ）を取得し、これまでのスコアを引き継いだ最新ファイルを生成します。' },
-                { name: 'c!clean (番号 ...)', value: 'スコアが `0` の未プレイ曲を一括削除します。\n例: `c!clean 1 3 5` のように番号を指定すると、その曲だけをピンポイントで削除します。' },
-                { name: 'c!gen [ユーザー名]', value: '最新のファイルを読み込み、ベスト枠画像を生成します。\n例: `c!gen username`' }
+                { name: '📝 データ編集・管理コマンド', value: '以下のコマンドは、`.scoresup` ファイルを**添付**、または**返信（引用）**して実行してください。' },
+                { name: 'c!view', value: '収録されている楽曲を番号付きのリストで表示します。' },
+                { name: 'c!score [番号] [スコア] ...', value: '指定した番号の楽曲のスコアを更新します。\n例: `c!score 1 1010000 3 998000`' },
+                { name: 'c!fc [番号] ... / c!aj [番号] ...', value: '指定した番号の楽曲のFC/AJを切り替えます。\n例: `c!fc 1 3 5`' },
+                { name: 'c!update', value: '最新の楽曲リストを取得し、現在のデータを引き継ぎます。' },
+                { name: 'c!clean (番号 ...)', value: 'スコアが `0` の曲をすべて削除します。番号を指定して特定の曲だけを削除することもできます。\n例: `c!clean 1 3 5`' },
+                { name: 'c!detail [番号]', value: '指定した番号の楽曲の詳細データを確認します。' }
             )
-            .setColor('#00aaff')
-            .setFooter({ text: '※このBotは順番待ちシステムを搭載しているため、連続でコマンドを送信しても安全に処理されます。' });
+            .setColor('#00aaff');
 
         return message.reply({ embeds: [embed] });
     }
@@ -99,7 +98,7 @@ client.on('messageCreate', async message => {
 
             if (cmdStr === 'c!view') {
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('ScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -128,7 +127,7 @@ client.on('messageCreate', async message => {
                     await message.reply({ embeds: [embed] });
                 } catch (error) {
                     console.error(error);
-                    await message.reply(`エラーが発生しました: ${error.message}`);
+                    await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
@@ -138,11 +137,12 @@ client.on('messageCreate', async message => {
             if (cmdStr === 'c!score') {
                 const args = message.content.split(' ').slice(1);
                 
-                if (args.length === 0) return message.reply('❌ 変更する内容が指定されていません。\n例: `c!score 1 1000000 3 998000` のように番号とスコアをセットで入力してください。');
-                if (args.length % 2 !== 0) return message.reply('❌ 引数の数が合いません。\n例: `c!score 1 1000000 3 998000` のように番号とスコアをセットで入力してください。');
+                if (args.length === 0 || args.length % 2 !== 0) {
+                    return message.reply('❌ 入力内容が正しくありません。\n例: `c!score 1 1000000 3 998000` のように、曲の番号とスコアをセットで入力してください。');
+                }
 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('ScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -155,7 +155,7 @@ client.on('messageCreate', async message => {
                         const newScore = parseInt(args[i + 1]);
 
                         if (isNaN(targetIndex) || isNaN(newScore) || !scoreData[targetIndex]) {
-                            editLogs.push(`❌ 番号 \`${args[i]}\` は無効か、存在しません。`);
+                            editLogs.push(`❌ 番号 \`${args[i]}\` の楽曲は見つかりませんでした。`);
                             continue; 
                         }
 
@@ -183,7 +183,7 @@ client.on('messageCreate', async message => {
                     await message.reply({ embeds: [embed], files: [newAttachment] });
                 } catch (error) {
                     console.error(error);
-                    await message.reply(`エラーが発生しました: ${error.message}`);
+                    await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
@@ -193,10 +193,10 @@ client.on('messageCreate', async message => {
             if (['c!fc', 'c!aj'].includes(cmdStr)) {
                 const args = message.content.split(' ').slice(1);
                 
-                if (args.length === 0) return message.reply(`❌ 番号を指定してください。（例: \`${cmdStr} 1 3 5\`）`);
+                if (args.length === 0) return message.reply(`❌ 番号が指定されていません。\n例: \`${cmdStr} 1 3 5\` のように、対象の番号を入力してください。`);
 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('ScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -215,7 +215,7 @@ client.on('messageCreate', async message => {
                         const targetIndex = parseInt(arg) - 1;
 
                         if (isNaN(targetIndex) || !scoreData[targetIndex]) {
-                            editLogs.push(`❌ 番号 \`${arg}\` は無効か、存在しません。`);
+                            editLogs.push(`❌ 番号 \`${arg}\` の楽曲は見つかりませんでした。`);
                             continue;
                         }
 
@@ -237,14 +237,14 @@ client.on('messageCreate', async message => {
                     const newAttachment = new AttachmentBuilder(fileBuffer, { name: 'updated_data.scoresup' });
 
                     const embed = new EmbedBuilder()
-                        .setTitle(`🔄 ${displayLabel} フラグを切り替えました！`)
+                        .setTitle(`🔄 ${displayLabel} の状態を更新しました！`)
                         .setDescription(editLogs.join('\n'))
                         .setColor('#ffaa00');
 
                     await message.reply({ embeds: [embed], files: [newAttachment] });
                 } catch (error) {
                     console.error(error);
-                    await message.reply(`エラーが発生しました: ${error.message}`);
+                    await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
@@ -254,15 +254,15 @@ client.on('messageCreate', async message => {
             if (cmdStr === 'c!detail') {
                 const args = message.content.split(' ');
                 
-                if (args.length < 2 || !args[1]) return message.reply('❌ 番号が指定されていません。\n詳細を見たい楽曲の番号をコマンドの後に続けて入力してください。（例: `c!detail 1`）');
+                if (args.length < 2 || !args[1] || isNaN(parseInt(args[1]))) {
+                    return message.reply('❌ 番号が正しく指定されていません。\n例: `c!detail 1` のように、詳細を見たい楽曲の番号を入力してください。');
+                }
 
                 const inputNumber = parseInt(args[1]);
                 const targetIndex = inputNumber - 1; 
 
-                if (isNaN(targetIndex)) return message.reply('❌ 番号を正しく指定してください。（例: `c!detail 1`）');
-
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('ScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -270,18 +270,18 @@ client.on('messageCreate', async message => {
                     const scoreData = await readAndDecodeScoreSup(localFilePath);
 
                     const song = scoreData[targetIndex];
-                    if (!song) return message.reply(`❌ 番号 \`${inputNumber}\` のデータは存在しません。`);
+                    if (!song) return message.reply(`❌ 番号 \`${inputNumber}\` のデータは見つかりませんでした。`);
 
                     const jsonString = JSON.stringify(song, null, 2);
                     const embed = new EmbedBuilder()
-                        .setTitle(`🔍 [${inputNumber}] ${song.title} (${song.diff}) の詳細`)
+                        .setTitle(`🔍 [${inputNumber}] ${song.title} (${song.diff}) の詳細データ`)
                         .setDescription(`\`\`\`json\n${jsonString}\n\`\`\``)
                         .setColor('#ffaa00'); 
 
                     await message.reply({ embeds: [embed] });
                 } catch (error) {
                     console.error(error);
-                    await message.reply(`エラーが発生しました: ${error.message}`);
+                    await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
@@ -290,9 +290,9 @@ client.on('messageCreate', async message => {
 
             if (cmdStr === 'c!update') {
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('引き継ぎ元のScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ 引き継ぎ元の `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
-                const replyMsg = await message.reply('🔄 最新の更新データを取得してマージしています。数十秒お待ちください...');
+                const replyMsg = await message.reply('🔄 最新の楽曲データを取得し、これまでのスコアを引き継いでいます。数十秒お待ちください...');
                 let localFilePath = null;
                 
                 try {
@@ -334,14 +334,14 @@ client.on('messageCreate', async message => {
                     const fileBuffer = Buffer.from(finalBase64String, 'utf-8');
                     const newAttachment = new AttachmentBuilder(fileBuffer, { name: 'merged_latest.scoresup' });
 
-                    let resultText = `**追加された楽曲:** ${addedSongs.length} 曲\n`;
+                    let resultText = `**新しく追加された楽曲:** ${addedSongs.length} 曲\n`;
                     if (addedSongs.length > 0) resultText += `\`\`\`\n${addedSongs.slice(0, 20).join('\n')}${addedSongs.length > 20 ? '\n...他' : ''}\n\`\`\`\n`;
                     
                     resultText += `**削除・名称変更された楽曲:** ${removedSongs.length} 曲\n`;
                     if (removedSongs.length > 0) resultText += `\`\`\`\n${removedSongs.slice(0, 20).join('\n')}${removedSongs.length > 20 ? '\n...他' : ''}\n\`\`\``;
 
                     const embed = new EmbedBuilder()
-                        .setTitle('✨ 楽曲リストのアップデートが完了しました！')
+                        .setTitle('✨ 楽曲データのアップデートが完了しました！')
                         .setDescription(resultText)
                         .setColor('#ff55ff');
 
@@ -349,7 +349,7 @@ client.on('messageCreate', async message => {
                     await replyMsg.delete().catch(() => {});
                 } catch (error) {
                     console.error(error);
-                    await replyMsg.edit(`⚠️ **エラーが発生しました**\n\`\`\`\n${error.message}\n\`\`\``).catch(() => {});
+                    await replyMsg.edit(`⚠️ **エラーが発生しました:** ${error.message}`).catch(() => {});
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
@@ -360,7 +360,7 @@ client.on('messageCreate', async message => {
                 const args = message.content.split(' ').slice(1);
                 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('ScoreSupファイルが見つかりません。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -392,48 +392,50 @@ client.on('messageCreate', async message => {
 
                     let desc = "";
                     if (args.length === 0) {
-                        desc = `スコアが \`0\` だった未プレイ楽曲を **${removedCount} 曲** 削除しました。\n現在の収録楽曲数: **${cleanedData.length} 曲**`;
+                        desc = `スコアが \`0\` だった未プレイ曲を **${removedCount} 曲** 削除しました。\n現在の収録数: **${cleanedData.length} 曲**`;
                     } else {
                         if (removedCount > 0) {
-                            desc = `指定された **${removedCount} 曲** を削除しました。\n現在の収録楽曲数: **${cleanedData.length} 曲**\n\`\`\`\n${removedTitles.join('\n')}\n\`\`\``;
+                            desc = `指定された **${removedCount} 曲** を削除しました。\n現在の収録数: **${cleanedData.length} 曲**\n\`\`\`\n${removedTitles.join('\n')}\n\`\`\``;
                         } else {
-                            desc = `指定された番号の楽曲は見つかりませんでした。\n現在の収録楽曲数: **${cleanedData.length} 曲**`;
+                            desc = `指定された番号の楽曲は見つかりませんでした。\n現在の収録数: **${cleanedData.length} 曲**`;
                         }
                     }
 
                     const embed = new EmbedBuilder()
-                        .setTitle('🧹 データのクリーンアップ完了')
+                        .setTitle('🧹 データの整理が完了しました！')
                         .setDescription(desc)
                         .setColor('#00ffcc');
 
                     await message.reply({ embeds: [embed], files: [newAttachment] });
                 } catch (error) {
                     console.error(error);
-                    await message.reply(`エラーが発生しました: ${error.message}`);
+                    await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                 } finally {
                     await cleanupScoreSup(localFilePath);
                 }
                 return;
             }
 
+            // ---------------------------------------------------------
+            // 【コマンド5】 c!gen
+            // ---------------------------------------------------------
             if (cmdStr === 'c!gen') {
                 const args = message.content.split(' ');
                 const username = args[1];
 
-                if (!username) return message.reply('❌ ユーザー名が指定されていません。\n画像に出力したいユーザー名をコマンドの後に続けて入力してください。（例: `c!gen ユーザー名`）');
+                if (!username) return message.reply('❌ 画像に出力するユーザー名が指定されていません。\n例: `c!gen ユーザー名` のように、コマンドの後に続けて入力してください。');
 
                 const attachment = await getScoreSupAttachment(message);
                 let localFilePath = null;
-                
                 let processMsg = null;
 
                 if (attachment) {
-                    processMsg = await message.reply(`ユーザーネーム「${username}」で画像を生成します。\n添付・引用されたScoreSupデータを読み込んでいます...`);
+                    processMsg = await message.reply(`ユーザーネーム「${username}」で画像を生成します。\n添付・引用された \`.scoresup\` ファイルを読み込んでいます...`);
                     try {
                         localFilePath = await downloadScoreSup(attachment);
                     } catch (err) {
                         if (processMsg) await processMsg.delete().catch(() => {});
-                        return message.reply('添付ファイルのダウンロードに失敗しました。');
+                        return message.reply('❌ 添付ファイルのダウンロードに失敗しました。');
                     }
                 } else {
                     processMsg = await message.reply(`ユーザーネーム「${username}」で画像を生成しています。数十秒お待ちください...`);
@@ -442,7 +444,7 @@ client.on('messageCreate', async message => {
                 try {
                     const imageBuffer = await generateImage(username, localFilePath);
                     const attachmentToSend = new AttachmentBuilder(imageBuffer, { name: 'chunithm_best.png' });
-
+                    
                     if (processMsg) {
                         await processMsg.delete().catch(() => {});
                     }
@@ -454,9 +456,9 @@ client.on('messageCreate', async message => {
                 } catch (error) {
                     console.error(error);
                     if (processMsg) {
-                        await processMsg.edit(`⚠️ **エラーが発生しました**\n\`\`\`\n${error.message}\n\`\`\``).catch(() => {});
+                        await processMsg.edit(`⚠️ **エラーが発生しました:** ${error.message}`).catch(() => {});
                     } else {
-                        await message.reply(`⚠️ **エラーが発生しました**\n\`\`\`\n${error.message}\n\`\`\``);
+                        await message.reply(`⚠️ **エラーが発生しました:** ${error.message}`);
                     }
                 } finally {
                     await cleanupScoreSup(localFilePath);
