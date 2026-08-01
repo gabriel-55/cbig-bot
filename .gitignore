@@ -8,3 +8,4 @@ temp_dl_*/
 *.jpg
 *.jpeg
 .DS_Store
+Thumbs.db
