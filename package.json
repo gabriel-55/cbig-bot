@@ -1,0 +1,25 @@
+{
+  "name": "cbig-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabriel-55/cbig-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gabriel-55/cbig-bot/issues"
+  },
+  "homepage": "https://github.com/gabriel-55/cbig-bot#readme",
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "puppeteer": "^25.4.0"
+  }
+}
