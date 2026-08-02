@@ -1,6 +1,6 @@
 # 「CHUNITHM ベスト枠画像ジェネレーター NEW」非公式DISCORD BOT
 
-Discord上で「CHUNITHM ベスト枠画像ジェネレーター NEW」を使用できるBotです。画像の生成だけでなく、「ScoreSup」のスコアデータの更新や編集もDiscordのコマンドから直接行うことができます。
+Discord上で「[CHUNITHM ベスト枠画像ジェネレーター NEW](https://reiwa.f5.si/newbestimg/chunithm/)」を使用できるBotです。画像の生成だけでなく、「[ScoreSup](https://reiwa.f5.si/scoresup/)」のスコアデータの更新や編集もDiscordのコマンドから直接行うことができます。
 
 ## 注意事項
 * 本Botは、「CHUNITHM ベスト枠画像ジェネレーター NEW」を利用・連携する非公式のツールであり、**ツールの原作者様とは一切関係がありません。**
