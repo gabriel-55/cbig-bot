@@ -1,4 +1,4 @@
-# 「CHUNITHM ベスト枠画像ジェネレーター NEW」DISCORD BOT
+# 「CHUNITHM ベスト枠画像ジェネレーター NEW」非公式DISCORD BOT
 
 Discord上で「CHUNITHM ベスト枠画像ジェネレーター NEW」を使用できるBotです。画像の生成だけでなく、「ScoreSup」のスコアデータの更新や編集もDiscordのコマンドから直接行うことができます。
 
