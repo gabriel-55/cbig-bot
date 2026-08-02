@@ -65,9 +65,9 @@ client.on('messageCreate', async message => {
     if (cmdStr === 'c!help') {
         const embed = new EmbedBuilder()
             .setTitle('📚 コマンドヘルプ')
-            .setDescription('**🖼️ ベスト枠画像の生成**\n`c!gen [ユーザー名]`\nベスト枠画像を生成します。（例: `c!gen username`）\n※`.scoresup` ファイルを**添付**、またはファイルがあるメッセージに**返信（引用）**して実行すると、そのデータを反映して生成します。')
+            .setDescription('**🖼️ ベスト枠画像の生成**\n`c!gen [ユーザー名]`\nベスト枠画像を生成します。（例: `c!gen username`）\n※`.scoresup` ファイルを**添付**、またはファイルがあるメッセージに**返信**して実行すると、そのデータを反映して生成します。')
             .addFields(
-                { name: '📝 データ編集・管理コマンド', value: '以下のコマンドは、`.scoresup` ファイルを**添付**、または**返信（引用）**して実行してください。' },
+                { name: '📝 データ編集・管理コマンド', value: '以下のコマンドは、`.scoresup` ファイルを**添付**、または**返信**して実行してください。' },
                 { name: 'c!view', value: '収録されている楽曲を番号付きのリストで表示します。' },
                 { name: 'c!score [番号] [スコア] ...', value: '指定した番号の楽曲のスコアを更新します。\n例: `c!score 1 1010000 3 998000`' },
                 { name: 'c!fc [番号] ... / c!aj [番号] ...', value: '指定した番号の楽曲のFC/AJを切り替えます。\n例: `c!fc 1 3 5`' },
@@ -98,7 +98,7 @@ client.on('messageCreate', async message => {
 
             if (cmdStr === 'c!view') {
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -134,7 +134,7 @@ client.on('messageCreate', async message => {
                 return;
             }
 
-            if (cmdStr === 'c!score') {
+if (cmdStr === 'c!score') {
                 const args = message.content.split(' ').slice(1);
                 
                 if (args.length === 0 || args.length % 2 !== 0) {
@@ -142,7 +142,7 @@ client.on('messageCreate', async message => {
                 }
 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -152,11 +152,18 @@ client.on('messageCreate', async message => {
 
                     for (let i = 0; i < args.length; i += 2) {
                         const targetIndex = parseInt(args[i]) - 1; 
-                        const newScore = parseInt(args[i + 1]);
-
-                        if (isNaN(targetIndex) || isNaN(newScore) || !scoreData[targetIndex]) {
+                        
+                        if (isNaN(targetIndex) || !scoreData[targetIndex]) {
                             editLogs.push(`❌ 番号 \`${args[i]}\` の楽曲は見つかりませんでした。`);
                             continue; 
+                        }
+
+                        const scoreStr = args[i + 1];
+                        const newScore = parseInt(scoreStr, 10);
+                        
+                        if (!/^\d+$/.test(scoreStr) || newScore < 0 || newScore > 1010000) {
+                            editLogs.push(`❌ 番号 \`${args[i]}\` に指定されたスコア「${scoreStr}」は無効です。0〜1010000の整数を入力してください。`);
+                            continue;
                         }
 
                         const song = scoreData[targetIndex];
@@ -196,7 +203,7 @@ client.on('messageCreate', async message => {
                 if (args.length === 0) return message.reply(`❌ 番号が指定されていません。\n例: \`${cmdStr} 1 3 5\` のように、対象の番号を入力してください。`);
 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -262,7 +269,7 @@ client.on('messageCreate', async message => {
                 const targetIndex = inputNumber - 1; 
 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -290,7 +297,7 @@ client.on('messageCreate', async message => {
 
             if (cmdStr === 'c!update') {
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ 引き継ぎ元の `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ 引き継ぎ元の `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 const replyMsg = await message.reply('🔄 最新の楽曲データを取得し、これまでのスコアを引き継いでいます。数十秒お待ちください...');
                 let localFilePath = null;
@@ -360,7 +367,7 @@ client.on('messageCreate', async message => {
                 const args = message.content.split(' ').slice(1);
                 
                 const attachment = await getScoreSupAttachment(message);
-                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信（引用）**して実行してください。');
+                if (!attachment) return message.reply('❌ `.scoresup` ファイルが見つかりません。ファイルを**添付**するか、ファイル付きのメッセージに**返信**して実行してください。');
 
                 let localFilePath = null;
                 try {
@@ -416,9 +423,6 @@ client.on('messageCreate', async message => {
                 return;
             }
 
-            // ---------------------------------------------------------
-            // 【コマンド5】 c!gen
-            // ---------------------------------------------------------
             if (cmdStr === 'c!gen') {
                 const args = message.content.split(' ');
                 const username = args[1];
